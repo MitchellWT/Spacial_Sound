@@ -9,6 +9,7 @@ mod audio_source;
 
 mod globals;
 
+use sdl2::mixer::{InitFlag, DEFAULT_CHANNELS, AUDIO_S16LSB};
 use sdl2::EventPump;
 use sdl2::video::Window;
 use sdl2::render::Canvas;
@@ -28,13 +29,25 @@ fn main() {
     let setup_tuple    = sdl_setup();
     let mut canvas     = setup_tuple.0;
     let mut event_pump = setup_tuple.1;
+    // 44kHz
+    let frequency = 44_100;
+    // Signed 16 bit samples
+    let format = AUDIO_S16LSB;
+    // Stereo
+    let channels = DEFAULT_CHANNELS;
+    // 1Mb
+    let chunck_size = 1_024;
+    // Opens audio channels
+    sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
     // Defines player and direction
     // TODO: potential change direction definitions
     // as the current implementation creates snake like movement
     let mut player     = Player::new(100, 100, 100, 100, 5);
-    // FILE PATH NOT WORKING, PRODUCING UNRECOGNIZED AUDIO FORMAT
-    let mut cool_music = AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/mp3/Cellular.mp3");
+    let mut cool_music = Vec::new();
+    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac"));
     let mut direction  = Direction::NULL;
+    // Play music
+    cool_music[0].play();
     // Game loop
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -66,15 +79,23 @@ fn main() {
             }
         }
         update(&mut player, &direction);
-        render(&player, &mut canvas);
+        render(&player, &cool_music, &mut canvas);
     }
 }
 
 fn sdl_setup() -> (Canvas<Window>, EventPump) {
     // Initalize SDL
     let sdl_context = sdl2::init().unwrap();
+    // Initalize SDL audio
+    let audio_subsystem = sdl_context.audio().unwrap();
     // Initalize SDL video
     let video_subsystem = sdl_context.video().unwrap();
+    // 4 channel mixing, simultaneously
+    let channel_amount = 4;
+    // Initalize SDL mixer
+    let mixer = sdl2::mixer::init(InitFlag::FLAC).unwrap();
+    // Allocated channels
+    sdl2::mixer::allocate_channels(channel_amount);
     // Set up SDL window, centered to the screen
     let window = video_subsystem.window("Spacial Sound", globals::SCREEN_WIDTH, globals::SCREEN_HEIGHT)
         .position_centered()
@@ -96,12 +117,16 @@ fn update(player: &mut Player, direction: &Direction) {
     player.update(direction);
 }
 
-fn render(player: &Player, canvas: &mut Canvas<Window>) {
+fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Window>) {
     // Renders white background for window
     canvas.set_draw_color(Color::RGB(255, 255, 255));
     canvas.clear();
 
     player.render(canvas);
+
+    for music in cool_music {
+        music.render(canvas);
+    }
     // Shows rendered data to the screen
     canvas.present();
 }

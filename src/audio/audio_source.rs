@@ -1,5 +1,8 @@
 extern crate sdl2;
 
+use Window;
+use Canvas;
+use Color;
 use std::path::Path;
 use std::path::PathBuf;
 use sdl2::rect::Point;
@@ -31,6 +34,14 @@ impl AudioSource {
     pub fn play(&self) -> bool {
         match self.music.play(-1) {
             Ok(_) => true,
+            Err(_) => false
+        }
+    }
+    // Draws the audio source to the screen as a rect
+    pub fn render(&self, canvas: &mut Canvas<Window>) -> bool {
+        canvas.set_draw_color(Color::RGB(155, 0, 0));
+        match canvas.fill_rect(self.collider()) {
+            Ok(_)  => true,
             Err(_) => false
         }
     }
