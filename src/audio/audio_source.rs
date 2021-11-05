@@ -4,7 +4,6 @@ use Window;
 use Canvas;
 use Color;
 use std::path::Path;
-use std::path::PathBuf;
 use sdl2::rect::Point;
 use sdl2::rect::Rect;
 use sdl2::mixer::Music;
