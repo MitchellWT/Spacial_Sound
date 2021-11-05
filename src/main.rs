@@ -45,7 +45,7 @@ fn main() {
     // as the current implementation creates snake like movement
     let mut player     = Player::new(100, 100, 100, 100, 5);
     let mut cool_music = Vec::new();
-    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac"));
+    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 500, 100));
     let mut direction  = Direction::NULL;
     // Play music
     cool_music[0].play();
@@ -118,6 +118,10 @@ fn update(player: &mut Player, cool_music: &Vec<AudioSource>, direction: &Direct
     if !collision_check(&player, cool_music) {
         player.update(direction);
     }
+
+    for music in cool_music {
+        music.update(player);
+    }
 }
 
 fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Window>) {
@@ -135,9 +139,10 @@ fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Wi
 }
 
 fn collision_check(player: &Player, cool_music: &Vec<AudioSource>) -> bool {
+    // Screen boarder check
     let mut collided = collision::screen_boarder(&player.collider());
     if collided {return collided}
-
+    // Checks all audio sources for collision
     for music in cool_music {
         collided = collision::axis_aligned(&player.collider(), &music.collider());
         if collided {return collided}
