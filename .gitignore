@@ -21,3 +21,6 @@ Cargo.lock
 
 # VS Code/Codium
 .vscode/
+
+# Remove audio files
+src/audio/flac/
