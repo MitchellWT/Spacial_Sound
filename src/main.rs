@@ -45,10 +45,12 @@ fn main() {
     // as the current implementation creates snake like movement
     let mut player     = Player::new(100, 100, 100, 100, 5);
     let mut cool_music = Vec::new();
-    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 100, 500));
+    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500));
+    cool_music.push(AudioSource::new(800, 100, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500));
     let mut direction  = Direction::NULL;
     // Play music
     cool_music[0].play();
+    cool_music[1].play();
     // Game loop
     'running: loop {
         for event in event_pump.poll_iter() {

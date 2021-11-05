@@ -20,12 +20,12 @@ pub struct AudioSource {
 
 impl AudioSource {
     // Function for creating a audio source struct
-    pub fn new(x: i32, y: i32, width: u32, height: u32, str_path: &str, min_distance: u32, max_distance: u32) -> AudioSource {
+    pub fn new(x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32) -> AudioSource {
         // Build path from string
         let path = Path::new(str_path);
         let raw = AudioSource {
             audio:        Chunk::from_file(path).unwrap(),
-            channel:      Channel::all(),
+            channel:      Channel(channel_id),
             collider:     Rect::from_center(Point::new(x, y), width, height),
             min_distance: min_distance,
             max_distance: max_distance
@@ -74,7 +74,7 @@ impl AudioSource {
                                       ) * 128.0;
             // Inverses the normalised distance
             let inversed_distance = (normalised_distance as i32 - 128).abs();
-            
+
             self.channel.set_volume(inversed_distance);
         }
 
