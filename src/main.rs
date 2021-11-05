@@ -45,7 +45,7 @@ fn main() {
     // as the current implementation creates snake like movement
     let mut player     = Player::new(100, 100, 100, 100, 5);
     let mut cool_music = Vec::new();
-    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 500, 100));
+    cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 100, 500));
     let mut direction  = Direction::NULL;
     // Play music
     cool_music[0].play();
@@ -79,6 +79,7 @@ fn main() {
                 _ => {}
             }
         }
+
         update(&mut player, &cool_music, &direction);
         render(&player, &cool_music, &mut canvas);
     }
