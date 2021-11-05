@@ -6,8 +6,9 @@ mod player;
 mod direction;
 #[path = "./audio/audio_source.rs"]
 mod audio_source;
-
+// Global varaibles
 mod globals;
+mod collision;
 
 use sdl2::mixer::{InitFlag, DEFAULT_CHANNELS, AUDIO_S16LSB};
 use sdl2::EventPump;
@@ -78,7 +79,7 @@ fn main() {
                 _ => {}
             }
         }
-        update(&mut player, &direction);
+        update(&mut player, &cool_music, &direction);
         render(&player, &cool_music, &mut canvas);
     }
 }
@@ -113,8 +114,10 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
     (canvas, event_pump)
 }
 
-fn update(player: &mut Player, direction: &Direction) {
-    player.update(direction);
+fn update(player: &mut Player, cool_music: &Vec<AudioSource>, direction: &Direction) {
+    if !collision_check(&player, cool_music) {
+        player.update(direction);
+    }
 }
 
 fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Window>) {
@@ -129,4 +132,16 @@ fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Wi
     }
     // Shows rendered data to the screen
     canvas.present();
+}
+
+fn collision_check(player: &Player, cool_music: &Vec<AudioSource>) -> bool {
+    let mut collided = collision::screen_boarder(&player.collider());
+    if collided {return collided}
+
+    for music in cool_music {
+        collided = collision::axis_aligned(&player.collider(), &music.collider());
+        if collided {return collided}
+    }
+
+    return collided;
 }
