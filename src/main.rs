@@ -18,7 +18,6 @@ use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
-use std::{thread, time};
 
 use player::Player;
 use direction::Direction;
@@ -91,13 +90,13 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
     // Initalize SDL
     let sdl_context = sdl2::init().unwrap();
     // Initalize SDL audio
-    let audio_subsystem = sdl_context.audio().unwrap();
+    sdl_context.audio().unwrap();
     // Initalize SDL video
     let video_subsystem = sdl_context.video().unwrap();
     // 4 channel mixing, simultaneously
     let channel_amount = 4;
     // Initalize SDL mixer
-    let mixer = sdl2::mixer::init(InitFlag::FLAC).unwrap();
+    sdl2::mixer::init(InitFlag::FLAC).unwrap();
     // Allocated channels
     sdl2::mixer::allocate_channels(channel_amount);
     // Set up SDL window, centered to the screen
