@@ -40,8 +40,6 @@ fn main() {
     // Opens audio channels
     sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
     // Defines player and direction
-    // TODO: potential change direction definitions
-    // as the current implementation creates snake like movement
     let mut player     = Player::new(100, 100, 100, 100, 5);
     let mut cool_music = Vec::new();
     cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500));
@@ -63,17 +61,37 @@ fn main() {
                 Event::KeyDown {keycode: Some(Keycode::W), ..} => {
                     direction = Direction::N;
                 },
+                Event::KeyUp {keycode: Some(Keycode::W), ..} => {
+                    if direction == Direction::N {
+                        direction = Direction::NULL;
+                    }
+                },
                 // Right player movement
                 Event::KeyDown {keycode: Some(Keycode::D), ..} => {
                     direction = Direction::E;
+                },
+                Event::KeyUp {keycode: Some(Keycode::D), ..} => {
+                    if direction == Direction::E {
+                        direction = Direction::NULL;
+                    }
                 },
                 // Down player movement
                 Event::KeyDown {keycode: Some(Keycode::S), ..} => {
                     direction = Direction::S;
                 },
+                Event::KeyUp {keycode: Some(Keycode::S), ..} => {
+                    if direction == Direction::S {
+                        direction = Direction::NULL;
+                    }
+                },
                 // Left player movement
                 Event::KeyDown {keycode: Some(Keycode::A), ..} => {
                     direction = Direction::W;
+                },
+                Event::KeyUp {keycode: Some(Keycode::A), ..} => {
+                    if direction == Direction::W {
+                        direction = Direction::NULL;
+                    }
                 },
                 // Allows code to be ran for all
                 // events

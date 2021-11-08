@@ -55,22 +55,18 @@ impl Player {
                 let new_y = self.collider().y() - self.velocity();
                 self.mut_collider().set_y(new_y);
             },
-            Direction::NE => {},
             Direction::E  => {
                 let new_x = self.collider().x() + self.velocity();
                 self.mut_collider().set_x(new_x);
             },
-            Direction::SE => {},
             Direction::S  => {
                 let new_y = self.collider().y() + self.velocity();
                 self.mut_collider().set_y(new_y);
             },
-            Direction::SW => {},
             Direction::W  => {
                 let new_x = self.collider().x() - self.velocity();
                 self.mut_collider().set_x(new_x);
             },
-            Direction::NW => {},
             Direction::NULL => {}   
         }
         
