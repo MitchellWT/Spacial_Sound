@@ -67,7 +67,7 @@ impl Player {
                 let new_x = self.collider().x() - self.velocity();
                 self.mut_collider().set_x(new_x);
             },
-            Direction::NULL => {}   
+            _ => {}   
         }
         
         true

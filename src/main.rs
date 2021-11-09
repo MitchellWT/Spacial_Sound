@@ -93,8 +93,7 @@ fn main() {
                         direction = Direction::NULL;
                     }
                 },
-                // Allows code to be ran for all
-                // events
+                // All other cases do nothing
                 _ => {}
             }
         }
@@ -135,7 +134,11 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
 }
 
 fn update(player: &mut Player, cool_music: &Vec<AudioSource>, direction: &Direction) {
-    if !collision_check(&player, cool_music) {
+    // Gets collision direction, If collision did not occur Direction::NULL is returned
+    let collision_direction = collision_check(&player, cool_music);
+    
+    // Check for no collision or If movement is not in the collision direction
+    if collision_direction == Direction::NULL || collision_direction != *direction {
         player.update(direction);
     }
 
@@ -158,15 +161,16 @@ fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Wi
     canvas.present();
 }
 
-fn collision_check(player: &Player, cool_music: &Vec<AudioSource>) -> bool {
+fn collision_check(player: &Player, cool_music: &Vec<AudioSource>) -> Direction {
     // Screen boarder check
     let mut collided = collision::screen_boarder(&player.collider());
-    if collided {return collided}
+    if collided {return Direction::HIT}
     // Checks all audio sources for collision
     for music in cool_music {
         collided = collision::axis_aligned(&player.collider(), &music.collider());
-        if collided {return collided}
+        // Gets collision direction If collision occured
+        if collided {return collision::axis_aligned_direction(&player.collider(), &music.collider())}
     }
 
-    return collided;
+    return Direction::NULL;
 }

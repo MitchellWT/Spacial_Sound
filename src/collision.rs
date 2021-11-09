@@ -3,6 +3,7 @@ extern crate sdl2;
 #[path = "./globals.rs"]
 mod globals;
 
+use Direction;
 use Rect;
 
 pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
@@ -16,7 +17,7 @@ pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
     let right_b = collider_b.x + collider_b.width() as i32;
     let bottom_b = collider_b.y + collider_b.height() as i32;
     let left_b = collider_b.x;
-    
+
     if bottom_a <= top_b ||
        top_a >= bottom_b ||
        right_a <= left_b ||
@@ -26,6 +27,35 @@ pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
     }
 
     return true;
+}
+// WARN: The below direction calculation can have some issues with corner collision
+// The calculations are relative to the screen not the player rotation
+pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction {
+    // Get colliders center    
+    let center_a = collider_a.center();
+    let center_b = collider_b.center();
+    // Get horizontal and vertical distance from collider center
+    let horizontal_distance = center_a.x - center_b.x;
+    let vertical_distance = center_a.y - center_b.y;
+    // Check which axis the collision occured on
+    if horizontal_distance.abs() > vertical_distance.abs() {
+        // Collision check for right direction
+        if horizontal_distance < 0 {
+            return Direction::E;
+        }
+        // Collision check for left direction
+        else {
+            return Direction::W;
+        }
+    } else {
+        // Collision check for down direction
+        if vertical_distance < 0 {
+            return Direction::S;
+        // Collision check for up direction
+        } else {
+            return Direction::N;
+        }
+    }
 }
 
 pub fn screen_boarder(collider: &Rect) -> bool {

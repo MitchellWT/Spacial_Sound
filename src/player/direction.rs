@@ -6,5 +6,6 @@ pub enum Direction {
     E,
     S,
     W,
+    HIT,
     NULL
 }
