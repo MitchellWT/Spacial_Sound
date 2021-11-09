@@ -31,6 +31,9 @@ pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
 // WARN: The below direction calculation can have issues with rectangles should only
 // be used with squares
 
+// TODO: Fix direction calculation to work with rectangles, potentially add the collider
+// width/height to the equation?
+
 // The calculations are relative to the screen not the player rotation
 pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction {
     // Get colliders center    
