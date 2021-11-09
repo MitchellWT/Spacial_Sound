@@ -46,7 +46,8 @@ impl AudioSource {
     }
     // Changes players internal values
     pub fn update(&self, player: &Player) -> bool {
-        self.volume_check(player)
+        self.volume_check(player);
+        self.panning_check(player)
     }
     // Draws the audio source to the screen as a rect
     pub fn render(&self, canvas: &mut Canvas<Window>) -> bool {
@@ -69,17 +70,83 @@ impl AudioSource {
         } else {
             // Normalises the distance between 0 and 128
             let normalised_distance = (
-                                        (distance - self.min_distance as f64) /
-                                        (self.max_distance as f64 - self.min_distance as f64)
-                                      ) * 128.0;
+                (distance - self.min_distance as f64) /
+                (self.max_distance as f64 - self.min_distance as f64)
+            ) * 128.0;
             // Inverses the normalised distance
             let inversed_distance = (normalised_distance as i32 - 128).abs();
 
-            self.channel.set_volume(inversed_distance);
+            self.channel.set_volume(inversed_distance * 2);
         }
 
         true
     }
+
+    fn panning_check(&self, player: &Player) -> bool {
+        // Gets left and right ear location
+        let left_ear = player.getLeftEar();
+        let right_ear = player.getRightEar();
+        // Gets left and right ear distance to audio source
+        let left_distance = self.between_distance(left_ear.x, left_ear.y);
+        let right_distance = self.between_distance(right_ear.x, right_ear.y);
+        // Used to add more exaggeration to the panning
+        let horizontal_distance = player.collider().center().x - self.collider().center().x;
+        // Creates panning variables
+        let panning_left: u8;
+        let panning_right: u8;
+        // Set left panning to zero If the player is out of the audio source range
+        if left_distance as u32 >= self.max_distance {
+            panning_left = 0;
+        // Set left panning to max If the player is close to the audio source
+        } else if left_distance as u32 <= self.min_distance {
+            panning_left = 255;    
+        } else {
+            // Normalises the distance between 0 and 255
+            let normalised_left_distance = (
+                (left_distance - self.min_distance as f64) /
+                (self.max_distance as f64 - self.min_distance as f64)
+            ) * 255.0;
+            // Inverses the normalised distance
+            
+            // If the player is more than 100 units away from the source
+            // the left panning is subtracted by 100
+            let inversed_left_distance =  match horizontal_distance > -100 {
+                true => (normalised_left_distance as i32 - 255).abs(),
+                false => (normalised_left_distance as i32 - 155).abs()
+            };
+
+            panning_left = inversed_left_distance as u8;
+        }
+        // Set right panning to zero If the player is out of the audio source range
+        if right_distance as u32 >= self.max_distance {
+            panning_right = 0;
+        // Set right panning to max If the player is close to the audio source
+        } else if right_distance as u32 <= self.min_distance {
+            panning_right = 255;       
+        } else {
+            // Normalises the distance between 0 and 255
+            let normalised_right_distance = (
+                (right_distance - self.min_distance as f64) /
+                (self.max_distance as f64 - self.min_distance as f64)
+            ) * 255.0;
+            // Inverses the normalised distance
+
+            // If the player is more than 100 units away from the source
+            // the right panning is subtracted by 100
+            let inversed_right_distance = match horizontal_distance < 100 {
+                true => (normalised_right_distance as i32 - 255).abs(),
+                false => (normalised_right_distance as i32 - 155).abs()
+            };
+
+            panning_right = inversed_right_distance as u8;
+        }
+
+        match self.channel.set_panning(panning_left, panning_right) {
+            Ok(_) => true,
+            Err(_) => false
+        }
+    }
+
     // Gets the distance between the player and the audio source
     fn between_distance(&self, player_x: i32, player_y: i32) -> f64 {
         // Calculate delta x
