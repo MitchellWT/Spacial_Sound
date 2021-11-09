@@ -63,15 +63,40 @@ pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction
     }
 }
 
-pub fn screen_boarder(collider: &Rect) -> bool {
-    // Screen width check
-    if collider.x < 0 || collider.x as u32 + collider.width() > globals::SCREEN_WIDTH {
-        return true;
+pub fn screen_boarder(collider: &Rect) -> (Direction, Direction) {
+    let mut first_direction = Direction::NULL;
+    // Screen left side check
+    if collider.x < 0 {
+        first_direction = Direction::W;
     }
-    // Screen height check
-    if collider.y < 0 || collider.y as u32 + collider.height() > globals::SCREEN_HEIGHT {
-        return true;
+    // Screen right side check
+    if collider.x + collider.width() as i32 > globals::SCREEN_WIDTH as i32 {
+        if first_direction != Direction::NULL {
+            return (first_direction, Direction::E);
+        }
+
+        first_direction = Direction::E;
     }
-    // Return false otherwise
-    return false;
+    // Screen top side check
+    if collider.y < 0 {
+        if first_direction != Direction::NULL {
+            return (first_direction, Direction::N);
+        }
+        
+        first_direction = Direction::N;
+    }
+    // Screen bottom side check
+    if collider.y + collider.height() as i32 > globals::SCREEN_HEIGHT as i32 {
+        if first_direction != Direction::NULL {
+            return (first_direction, Direction::S);
+        }
+        
+        first_direction = Direction::S;
+    }
+    if first_direction != Direction::NULL {
+        return (first_direction, Direction::NULL);
+    }
+
+    // Return Direction::NULL otherwise
+    return (Direction::NULL, Direction::NULL);
 }

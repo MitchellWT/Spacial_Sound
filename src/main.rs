@@ -43,7 +43,7 @@ fn main() {
     let mut player     = Player::new(100, 100, 100, 100, 5);
     let mut cool_music = Vec::new();
     cool_music.push(AudioSource::new(500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500));
-    cool_music.push(AudioSource::new(800, 100, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500));
+    cool_music.push(AudioSource::new(800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500));
     let mut direction  = Direction::NULL;
     // Play music
     cool_music[0].play();
@@ -136,9 +136,14 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
 fn update(player: &mut Player, cool_music: &Vec<AudioSource>, direction: &Direction) {
     // Gets collision direction, If collision did not occur Direction::NULL is returned
     let collision_direction = collision_check(&player, cool_music);
+    let screen_collision_tuple = screen_collision_check(&player);
     
-    // Check for no collision or If movement is not in the collision direction
-    if collision_direction == Direction::NULL || collision_direction != *direction {
+    // First, checks for screen bound collision
+    if (screen_collision_tuple == (Direction::NULL, Direction::NULL) 
+    // Checks for tuple collision with screen bounds
+    || screen_collision_tuple.0 != *direction && screen_collision_tuple.1 != *direction)
+    // Check for collision with other world rects
+    && (collision_direction == Direction::NULL || collision_direction != *direction) {
         player.update(direction);
     }
 
@@ -161,13 +166,15 @@ fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Wi
     canvas.present();
 }
 
+// Redundent wrapping, however was added in case of additional checks
+fn screen_collision_check(player: &Player) -> (Direction, Direction) {
+    return collision::screen_boarder(&player.collider());
+}
+
 fn collision_check(player: &Player, cool_music: &Vec<AudioSource>) -> Direction {
-    // Screen boarder check
-    let mut collided = collision::screen_boarder(&player.collider());
-    if collided {return Direction::HIT}
     // Checks all audio sources for collision
     for music in cool_music {
-        collided = collision::axis_aligned(&player.collider(), &music.collider());
+        let collided = collision::axis_aligned(&player.collider(), &music.collider());
         // Gets collision direction If collision occured
         if collided {return collision::axis_aligned_direction(&player.collider(), &music.collider())}
     }
