@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate relative_path;
 
 use sdl2::mixer::Chunk;
 use sdl2::mixer::Channel;
@@ -16,11 +17,12 @@ pub struct AudioSource {
     collider:     Rect,
     min_distance: u32,
     max_distance: u32,
+    panning_stop: i32,
 }
 
 impl AudioSource {
     // Function for creating a audio source struct
-    pub fn new(x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32) -> AudioSource {
+    pub fn new(x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32, panning_stop: i32) -> AudioSource {
         // Build path from string
         let path = Path::new(str_path);
         let raw = AudioSource {
@@ -28,7 +30,8 @@ impl AudioSource {
             channel:      Channel(channel_id),
             collider:     Rect::from_center(Point::new(x, y), width, height),
             min_distance: min_distance,
-            max_distance: max_distance
+            max_distance: max_distance,
+            panning_stop: panning_stop
         };
         
         raw
@@ -84,8 +87,8 @@ impl AudioSource {
 
     fn panning_check(&self, player: &Player) -> bool {
         // Gets left and right ear location
-        let left_ear = player.getLeftEar();
-        let right_ear = player.getRightEar();
+        let left_ear = player.get_left_ear();
+        let right_ear = player.get_right_ear();
         // Gets left and right ear distance to audio source
         let left_distance = self.between_distance(left_ear.x, left_ear.y);
         let right_distance = self.between_distance(right_ear.x, right_ear.y);
@@ -108,9 +111,9 @@ impl AudioSource {
             ) * 255.0;
             // Inverses the normalised distance
             
-            // If the player is more than 100 units away from the source
-            // the left panning is subtracted by 100
-            let inversed_left_distance =  match horizontal_distance > -100 {
+            // If the player is more than the panning_stop amount away from the source
+            // (to the left) the left panning is subtracted by 100
+            let inversed_left_distance =  match horizontal_distance > -self.panning_stop {
                 true => (normalised_left_distance as i32 - 255).abs(),
                 false => (normalised_left_distance as i32 - 155).abs()
             };
@@ -131,9 +134,9 @@ impl AudioSource {
             ) * 255.0;
             // Inverses the normalised distance
 
-            // If the player is more than 100 units away from the source
-            // the right panning is subtracted by 100
-            let inversed_right_distance = match horizontal_distance < 100 {
+            // If the player is more than the panning_stop amount away from the source
+            // (to the right) the right panning is subtracted by 100
+            let inversed_right_distance = match horizontal_distance < self.panning_stop {
                 true => (normalised_right_distance as i32 - 255).abs(),
                 false => (normalised_right_distance as i32 - 155).abs()
             };

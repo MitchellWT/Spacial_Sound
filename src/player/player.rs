@@ -35,11 +35,11 @@ impl Player {
         &mut self.collider
     }
     // Get position of left ear, point struct
-    pub fn getLeftEar(&self) -> Point {
+    pub fn get_left_ear(&self) -> Point {
         return Point::new(self.collider.left(), self.collider.center().y());
     }
     // Get posiiton of right ear, point struct
-    pub fn getRightEar(&self) -> Point {
+    pub fn get_right_ear(&self) -> Point {
         return Point::new(self.collider.right(), self.collider.center().y());
     }
     // Get velocity, not mutable
