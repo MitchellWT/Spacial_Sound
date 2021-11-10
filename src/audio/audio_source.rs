@@ -12,6 +12,7 @@ use sdl2::rect::Point;
 use sdl2::rect::Rect;
 
 pub struct AudioSource {
+    id:           u32,
     audio:        Chunk,
     channel:      Channel,
     collider:     Rect,
@@ -22,10 +23,11 @@ pub struct AudioSource {
 
 impl AudioSource {
     // Function for creating a audio source struct
-    pub fn new(x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32, panning_stop: i32) -> AudioSource {
+    pub fn new(id: u32, x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32, panning_stop: i32) -> AudioSource {
         // Build path from string
         let path = Path::new(str_path);
         let raw = AudioSource {
+            id:           id,
             audio:        Chunk::from_file(path).unwrap(),
             channel:      Channel(channel_id),
             collider:     Rect::from_center(Point::new(x, y), width, height),
@@ -39,6 +41,10 @@ impl AudioSource {
     // Get collider, not mutable
     pub fn collider(&self) -> Rect {
         self.collider
+    }
+    // Get id
+    pub fn id(&self) -> u32 {
+        self.id
     }
     // Plays music from audio source, infinite loop
     pub fn play(&self) -> bool {

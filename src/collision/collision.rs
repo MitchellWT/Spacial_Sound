@@ -1,6 +1,6 @@
 extern crate sdl2;
 
-#[path = "./globals.rs"]
+#[path = "../globals.rs"]
 mod globals;
 
 use Direction;

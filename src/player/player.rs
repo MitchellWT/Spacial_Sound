@@ -26,11 +26,11 @@ impl Player {
         
         raw
     }
-    // Get collider, not mutable
+    // Getter for collider, not mutable
     pub fn collider(&self) -> Rect {
         self.collider
     }
-    // Get mutable collider
+    // Getter for mutable collider
     pub fn mut_collider(&mut self) -> &mut Rect {
         &mut self.collider
     }
