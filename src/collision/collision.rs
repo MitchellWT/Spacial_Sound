@@ -3,6 +3,7 @@ extern crate sdl2;
 #[path = "../globals.rs"]
 mod globals;
 
+use sdl2::rect::Point;
 use Direction;
 use Rect;
 
@@ -31,10 +32,7 @@ pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
 // WARN: The below direction calculation can have issues with rectangles should only
 // be used with squares
 
-// TODO: Fix direction calculation to work with rectangles, potentially add the collider
-// width/height to the equation?
-
-// The calculations are relative to the screen not the player rotation
+// The calculations are relative to the screen
 pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction {
     // Get colliders center    
     let center_a = collider_a.center();
@@ -61,6 +59,61 @@ pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction
             return Direction::N;
         }
     }
+}
+// The below direction calculation can be used for all rectangular shapes, however it
+// is significantly more computationally expensive than the above calculation, only use
+// it for non-square rectangles
+pub fn line_to_line_direction(collider_a: &Rect, collider_b: &Rect) -> Direction {
+    let mut top_a_counter    = 0;
+    let mut left_a_counter   = 0;
+    let mut bottom_a_counter = 0;
+    let mut right_a_counter  = 0;
+
+    // Horizontal collision check
+    for x in collider_a.x()..(collider_a.x() + collider_a.width() as i32) {
+        // Top collision check
+        if collider_b.contains_point(Point::new(x, collider_a.y())) {
+            top_a_counter += 1;            
+        }
+        // Bottom collision check
+        if collider_b.contains_point(Point::new(x, collider_a.y() + collider_a.width() as i32)) {
+            bottom_a_counter += 1;
+        }
+    }
+    // Vertical collision check 
+    for y in collider_a.y()..(collider_a.y() + collider_a.height() as i32) {
+        // Left collision check
+        if collider_b.contains_point(Point::new(collider_a.x(), y)) {
+            left_a_counter += 1;
+        }
+        // Right collision check
+        if collider_b.contains_point(Point::new(collider_a.x() + collider_a.height() as i32, y)) {
+            right_a_counter += 1;
+        }
+    }
+    
+    if top_a_counter >= left_a_counter  &&
+       top_a_counter >= right_a_counter &&
+       top_a_counter >= bottom_a_counter {
+        return Direction::N;
+    }
+    if left_a_counter >= top_a_counter   &&
+       left_a_counter >= right_a_counter &&
+       left_a_counter >= bottom_a_counter {
+        return Direction::W;    
+    }
+    if bottom_a_counter >= top_a_counter   &&
+       bottom_a_counter >= right_a_counter &&
+       bottom_a_counter >= left_a_counter {
+        return Direction::S;
+    }
+    if right_a_counter >= top_a_counter  &&
+       right_a_counter >= left_a_counter &&
+       right_a_counter >= bottom_a_counter {
+        return Direction::E;
+    }
+
+    return Direction::NULL;
 }
 
 pub fn screen_boarder(collider: &Rect) -> (Direction, Direction) {

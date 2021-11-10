@@ -203,7 +203,11 @@ fn collision_check(player: &Player, cool_music: &Vec<AudioSource>, collision_map
         let collided = collision::axis_aligned(&player.collider(), &music.collider());
         // Sets collision direction in collision_map If collision was sucessful
         if collided {
-            collision_map.set_direction(music.id(), collision::axis_aligned_direction(&player.collider(), &music.collider()));
+            if music.collider().width() == music.collider().height() {
+                collision_map.set_direction(music.id(), collision::axis_aligned_direction(&player.collider(), &music.collider()));
+            } else {
+                collision_map.set_direction(music.id(), collision::line_to_line_direction(&player.collider(), &music.collider()));    
+            }
         }
         // Sets collision direction to Direction::NULL If collision did not occur
         else if *collision_map.get_direction(music.id()).unwrap() != Direction::NULL {
