@@ -44,14 +44,16 @@ fn main() {
     // Opens audio channels
     sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
     // Defines player and direction
-    let mut player     = Player::new(100, 100, 100, 100, 5);
-    let mut cool_music = Vec::new();
-    cool_music.push(AudioSource::new(0, 500, 500, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100));
+    let mut player          = Player::new(100, 100, 100, 100, 5);
+    let mut player_previous = player.collider();
+    let mut cool_music      = Vec::new();
+    cool_music.push(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100));
     cool_music.push(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100));
     let mut collision_map = CollisionMap::new();
     collision_map.set_direction(cool_music[0].id(), Direction::NULL);
     collision_map.set_direction(cool_music[1].id(), Direction::NULL);
     let mut direction  = Direction::NULL;
+    let mut last_frame_collision = false;
     // Play music
     cool_music[0].play();
     cool_music[1].play();
@@ -105,7 +107,7 @@ fn main() {
             }
         }
 
-        update(&mut player, &cool_music, &mut collision_map, &direction);
+        update(&mut player, &mut player_previous, &cool_music, &mut collision_map, &direction, &mut last_frame_collision);
         render(&player, &cool_music, &mut canvas);
     }
 }
@@ -140,7 +142,7 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
     (canvas, event_pump)
 }
 
-fn update(player: &mut Player, cool_music: &Vec<AudioSource>, collision_map: &mut CollisionMap, direction: &Direction) {
+fn update(player: &mut Player, player_previous: &mut Rect, cool_music: &Vec<AudioSource>, collision_map: &mut CollisionMap, direction: &Direction, last_frame_collision: &mut bool) {
     // Gets collision direction, If collision did not occur Direction::NULL is returned
     collision_check(&player, cool_music, collision_map);
     let screen_collision_tuple = screen_collision_check(&player);
@@ -151,7 +153,24 @@ fn update(player: &mut Player, cool_music: &Vec<AudioSource>, collision_map: &mu
     || screen_collision_tuple.0 != *direction && screen_collision_tuple.1 != *direction)
     // Check for collision with other world rects
     && (!collision_map.check_for_direction(direction)) {
+        *player_previous = player.collider();
         player.update(direction);
+    }
+    // First, checks for screen bound collision 
+    else if screen_collision_tuple == (Direction::NULL, Direction::NULL) && 
+    // Checks for movement and If the last frame involved a collision
+    // The last frame check reduces overall computation
+    *direction != Direction::NULL && *last_frame_collision {
+        let new_collider = player_previous;
+        // Overlap check that saves new collider value in new_collider
+        if overlap_check(new_collider, direction, cool_music, collision_map) {
+            player.set_collider(*new_collider);
+        }
+        // Reset last frame collision
+        *last_frame_collision = false
+    } else {
+        // Set last frame as collided
+        *last_frame_collision = true;
     }
 
     for music in cool_music {
@@ -186,9 +205,20 @@ fn collision_check(player: &Player, cool_music: &Vec<AudioSource>, collision_map
         if collided {
             collision_map.set_direction(music.id(), collision::axis_aligned_direction(&player.collider(), &music.collider()));
         }
-        // Sets collision direction to Direction::NULL IF collision did not occur
+        // Sets collision direction to Direction::NULL If collision did not occur
         else if *collision_map.get_direction(music.id()).unwrap() != Direction::NULL {
             collision_map.set_direction(music.id(), Direction::NULL);
         }
     }
+}
+
+fn overlap_check(new_collider: &mut Rect, direction: &Direction, cool_music: &Vec<AudioSource>, collision_map: &CollisionMap) -> bool {
+    // Gets the first collider from music array using our movement direction
+
+    // Shouldent create issues since our player is a square, If player
+    // shape changes (I.e. circle) this may need to be changed
+    let collision_id = collision_map.get_first_id(direction);
+    let collider     = &cool_music[*collision_id as usize].collider();
+
+    return collision::axis_aligned_continous(new_collider, direction, collider);
 }

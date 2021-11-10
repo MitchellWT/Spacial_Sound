@@ -34,6 +34,10 @@ impl Player {
     pub fn mut_collider(&mut self) -> &mut Rect {
         &mut self.collider
     }
+    // Setter for collider
+    pub fn set_collider(&mut self, collider: Rect) {
+        self.collider = collider
+    }
     // Get position of left ear, point struct
     pub fn get_left_ear(&self) -> Point {
         return Point::new(self.collider.left(), self.collider.center().y());

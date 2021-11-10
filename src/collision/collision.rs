@@ -100,3 +100,25 @@ pub fn screen_boarder(collider: &Rect) -> (Direction, Direction) {
     // Return Direction::NULL otherwise
     return (Direction::NULL, Direction::NULL);
 }
+// This calculation is inaccurate with two moving bodies
+// but will be correct with one moving body
+pub fn axis_aligned_continous(new_collider: &mut Rect, direction: &Direction, collider: &Rect) -> bool {
+    // Check for inital collision, when player is against collider
+    let mut collided = axis_aligned(&new_collider, collider);
+    if collided {return false}
+
+    // Increments collider until collision occurs
+    while !collided {
+        match *direction {
+            Direction::N  => {new_collider.set_y(new_collider.y() - 1)},
+            Direction::E  => {new_collider.set_x(new_collider.x() + 1)},
+            Direction::S  => {new_collider.set_y(new_collider.y() + 1)},
+            Direction::W  => {new_collider.set_x(new_collider.x() - 1)},
+            _ => {}   
+        }
+
+        collided = axis_aligned(&new_collider, collider);
+    }
+
+    true
+}
