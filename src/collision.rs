@@ -8,15 +8,15 @@ use Rect;
 
 pub fn axis_aligned(collider_a: &Rect, collider_b: &Rect) -> bool {
     // Get comparision variables for first collider
-    let top_a = collider_a.y;
-    let right_a = collider_a.x + collider_a.width() as i32;
+    let top_a    = collider_a.y;
+    let right_a  = collider_a.x + collider_a.width() as i32;
     let bottom_a = collider_a.y + collider_a.height() as i32;
-    let left_a = collider_a.x;
+    let left_a   = collider_a.x;
     // Get comparision varaibles for second collider
-    let top_b = collider_b.y;
-    let right_b = collider_b.x + collider_b.width() as i32;
+    let top_b    = collider_b.y;
+    let right_b  = collider_b.x + collider_b.width() as i32;
     let bottom_b = collider_b.y + collider_b.height() as i32;
-    let left_b = collider_b.x;
+    let left_b   = collider_b.x;
 
     if bottom_a <= top_b ||
        top_a >= bottom_b ||
@@ -41,7 +41,7 @@ pub fn axis_aligned_direction(collider_a: &Rect, collider_b: &Rect) -> Direction
     let center_b = collider_b.center();
     // Get horizontal and vertical distance from collider center
     let horizontal_distance = center_a.x - center_b.x;
-    let vertical_distance = center_a.y - center_b.y;
+    let vertical_distance   = center_a.y - center_b.y;
     // Check which axis the collision occured on
     if horizontal_distance.abs() > vertical_distance.abs() {
         // Collision check for right direction
