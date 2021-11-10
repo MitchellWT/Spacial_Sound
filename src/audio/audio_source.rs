@@ -87,10 +87,10 @@ impl AudioSource {
 
     fn panning_check(&self, player: &Player) -> bool {
         // Gets left and right ear location
-        let left_ear = player.get_left_ear();
+        let left_ear  = player.get_left_ear();
         let right_ear = player.get_right_ear();
         // Gets left and right ear distance to audio source
-        let left_distance = self.between_distance(left_ear.x, left_ear.y);
+        let left_distance  = self.between_distance(left_ear.x, left_ear.y);
         let right_distance = self.between_distance(right_ear.x, right_ear.y);
         // Used to add more exaggeration to the panning
         let horizontal_distance = player.collider().center().x - self.collider().center().x;
@@ -114,7 +114,7 @@ impl AudioSource {
             // If the player is more than the panning_stop amount away from the source
             // (to the left) the left panning is subtracted by 100
             let inversed_left_distance =  match horizontal_distance > -self.panning_stop {
-                true => (normalised_left_distance as i32 - 255).abs(),
+                true =>  (normalised_left_distance as i32 - 255).abs(),
                 false => (normalised_left_distance as i32 - 155).abs()
             };
 
@@ -137,7 +137,7 @@ impl AudioSource {
             // If the player is more than the panning_stop amount away from the source
             // (to the right) the right panning is subtracted by 100
             let inversed_right_distance = match horizontal_distance < self.panning_stop {
-                true => (normalised_right_distance as i32 - 255).abs(),
+                true =>  (normalised_right_distance as i32 - 255).abs(),
                 false => (normalised_right_distance as i32 - 155).abs()
             };
 
