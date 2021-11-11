@@ -35,6 +35,7 @@ impl Entity for Wall {
 }
 
 impl Wall {
+    // Function for creating a wall struct
     pub fn new(id: u32, x: i32, y: i32, width: u32, height: u32) -> Wall {
         let raw = Wall {
             id:       id,
@@ -43,7 +44,7 @@ impl Wall {
 
         raw
     }
-    
+    // Gets the wall interference between two points    
     pub fn get_interference_amount(&self, point_a: Point, point_b: Point) -> i32 {
         match self.collider.intersect_line(point_a, point_b) {
             Some((inter_point_a, inter_point_b)) => {

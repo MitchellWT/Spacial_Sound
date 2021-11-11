@@ -36,19 +36,27 @@ fn main() {
     let chunck_size = 1_024;
     // Opens audio channels
     sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
-    // Defines player and direction
-    //let mut player_previous = player.collider();
+    // Vector for storing all entities in the game world
+    // this excludes the player for code simplicity
     let mut entity_vec: Vec<Box<dyn Entity>> = Vec::new();
+    // Collision map for storing the collision data for all
+    // non-player entities
     let mut collision_map = CollisionMap::new();
+    // Player and player's previous collider, collider used
+    // for continious collision detection
     let mut player = Player::new(0, 100, 100, 100, 100, 5);
     let mut player_previous = player.collider();
+    // Addeds all entities to vector
     entity_vec.push(Box::new(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
     entity_vec.push(Box::new(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100)));
     entity_vec.push(Box::new(Wall::new(2, 300, 500, 100, 50)));
+    // Addeds all entities to collision map
     collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
     collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
     collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
+    // Players current movement direction
     let mut direction  = Direction::NULL;
+    // Used for determining If contionus collision detection is required
     let mut last_frame_collision = false;
     // Play music
     entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
@@ -168,23 +176,27 @@ fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_pre
         // Set last frame as collided
         *last_frame_collision = true;
     }
-
+    
     let mut audio_source_vec = Vec::new();
     let mut wall_vec = Vec::new();
-
+    // Seperates the entity vector into to seperate vectors
+    // (defined above)
     for entity in entity_vec {
+        // Collecting for AudioSource entities
         match entity.as_any().downcast_ref::<AudioSource>() {
             Some(audio_source) => audio_source_vec.push(audio_source),
             None => {}
         }
+        // Collecting for Wall entities
         match entity.as_any().downcast_ref::<Wall>() {
             Some(wall) => wall_vec.push(wall),
             None => {}
         }
     }
-
+    
     for audio_source in audio_source_vec {
         let mut interference_amount = 0;
+        // Calculates the wall interface using all wall entities
         for wall in &wall_vec {
             interference_amount += wall.get_interference_amount(player.collider().center(), audio_source.collider().center());
         }
@@ -197,13 +209,12 @@ fn render(player: &mut Player, entity_vec: &Vec<Box<dyn Entity>>, canvas: &mut C
     // Renders white background for window
     canvas.set_draw_color(Color::RGB(255, 255, 255));
     canvas.clear();
-
+    
     player.render(canvas);
-
+    // Renders all entities in entity vector
     for entity in entity_vec {
         entity.render(canvas);
     }
-
     // Shows rendered data to the screen
     canvas.present();
 }
@@ -233,8 +244,6 @@ fn collision_check(player: &Player, entity_vec: &Vec<Box<dyn Entity>>, collision
 }
 
 fn overlap_check(new_collider: &mut Rect, direction: &Direction, entity_vec: &Vec<Box<dyn Entity>>, collision_map: &CollisionMap) -> bool {
-    // Gets the first collider from music array using our movement direction
-
     // Shouldent create issues since our player is a square, If player
     // shape changes (I.e. circle) this may need to be changed
     let collision_id = collision_map.get_first_id(direction);
