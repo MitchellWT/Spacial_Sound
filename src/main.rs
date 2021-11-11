@@ -44,7 +44,7 @@ fn main() {
     let mut player_previous = player.collider();
     entity_vec.push(Box::new(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
     entity_vec.push(Box::new(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100)));
-    entity_vec.push(Box::new(Wall::new(2, 400, 400, 20, 300)));
+    entity_vec.push(Box::new(Wall::new(2, 300, 500, 100, 50)));
     collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
     collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
     collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
@@ -169,11 +169,27 @@ fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_pre
         *last_frame_collision = true;
     }
 
+    let mut audio_source_vec = Vec::new();
+    let mut wall_vec = Vec::new();
+
     for entity in entity_vec {
         match entity.as_any().downcast_ref::<AudioSource>() {
-            Some(audio_source) => audio_source.update(&player, &0),
-            None => false
-        };
+            Some(audio_source) => audio_source_vec.push(audio_source),
+            None => {}
+        }
+        match entity.as_any().downcast_ref::<Wall>() {
+            Some(wall) => wall_vec.push(wall),
+            None => {}
+        }
+    }
+
+    for audio_source in audio_source_vec {
+        let mut interference_amount = 0;
+        for wall in &wall_vec {
+            interference_amount += wall.get_interference_amount(player.collider().center(), audio_source.collider().center());
+        }
+
+        audio_source.update(&player, &interference_amount);
     }
 }
 
