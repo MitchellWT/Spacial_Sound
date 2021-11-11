@@ -1,34 +1,52 @@
 extern crate sdl2;
 
-#[path = "./direction.rs"]
-mod direction;
-#[path = "../globals.rs"]
-mod globals;
-
+use std::any::Any;
+use player::entity::Entity;
+use Direction;
 use Color;
 use sdl2::video::Window;
 use sdl2::render::Canvas;
 use sdl2::rect::{Point, Rect};
-use direction::Direction;
 
 pub struct Player {
+    id      : u32,
     collider: Rect,
     velocity: i32,
 }
 
+impl Entity for Player {
+    // Needed for downcasting
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    // Gets Id for entity
+    fn id(&self) -> u32 {
+        self.id
+    }
+    // Getter for collider, not mutable
+    fn collider(&self) -> Rect {
+        self.collider
+    }    
+    // Draws the player to the screen, should be called after update
+    fn render(&self, canvas: &mut Canvas<Window>) -> bool {
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        match canvas.fill_rect(self.collider()) {
+            Ok(_)  => true,
+            Err(_) => false
+        }
+    }
+}
+
 impl Player {
     // Function for creating a player struct
-    pub fn new(x: i32, y: i32, width: u32, height: u32, velocity: i32) -> Player {
+    pub fn new(id: u32, x: i32, y: i32, width: u32, height: u32, velocity: i32) -> Player {
         let raw = Player {
+            id:       id,
             collider: Rect::from_center(Point::new(x, y), width, height),
             velocity: velocity
         };
         
         raw
-    }
-    // Getter for collider, not mutable
-    pub fn collider(&self) -> Rect {
-        self.collider
     }
     // Getter for mutable collider
     pub fn mut_collider(&mut self) -> &mut Rect {
@@ -75,13 +93,5 @@ impl Player {
         }
         
         true
-    }
-    // Draws the player to the screen, should be called after update
-    pub fn render(&self, canvas: &mut Canvas<Window>) -> bool {
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        match canvas.fill_rect(self.collider()) {
-            Ok(_)  => true,
-            Err(_) => false
-        }
     }
 }

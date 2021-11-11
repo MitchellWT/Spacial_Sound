@@ -1,4 +1,4 @@
-extern crate sdl2;
+pub mod collision_map;
 
 #[path = "../globals.rs"]
 mod globals;

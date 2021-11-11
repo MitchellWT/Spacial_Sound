@@ -1,6 +1,8 @@
 extern crate sdl2;
 extern crate relative_path;
 
+use std::any::Any;
+use Entity;
 use sdl2::mixer::Chunk;
 use sdl2::mixer::Channel;
 use Player;
@@ -21,6 +23,29 @@ pub struct AudioSource {
     panning_stop: i32,
 }
 
+impl Entity for AudioSource {
+    // Needed for downcasting
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    // Gets Id for entity
+    fn id(&self) -> u32 {
+        self.id
+    }
+    // Get collider, not mutable
+    fn collider(&self) -> Rect {
+        self.collider
+    }
+    // Draws the audio source to the screen as a rect
+    fn render(&self, canvas: &mut Canvas<Window>) -> bool {
+        canvas.set_draw_color(Color::RGB(155, 0, 0));
+        match canvas.fill_rect(self.collider()) {
+            Ok(_)  => true,
+            Err(_) => false
+        }
+    }
+}
+
 impl AudioSource {
     // Function for creating a audio source struct
     pub fn new(id: u32, x: i32, y: i32, width: u32, height: u32, str_path: &str, channel_id: i32, min_distance: u32, max_distance: u32, panning_stop: i32) -> AudioSource {
@@ -38,14 +63,6 @@ impl AudioSource {
         
         raw
     }
-    // Get collider, not mutable
-    pub fn collider(&self) -> Rect {
-        self.collider
-    }
-    // Get id
-    pub fn id(&self) -> u32 {
-        self.id
-    }
     // Plays music from audio source, infinite loop
     pub fn play(&self) -> bool {
         match self.channel.play(&self.audio, -1) {
@@ -54,20 +71,12 @@ impl AudioSource {
         }
     }
     // Changes players internal values
-    pub fn update(&self, player: &Player) -> bool {
-        self.volume_check(player);
+    pub fn update(&self, player: &Player, interference_amount: &i32) -> bool {
+        self.volume_check(player, interference_amount);
         self.panning_check(player)
     }
-    // Draws the audio source to the screen as a rect
-    pub fn render(&self, canvas: &mut Canvas<Window>) -> bool {
-        canvas.set_draw_color(Color::RGB(155, 0, 0));
-        match canvas.fill_rect(self.collider()) {
-            Ok(_)  => true,
-            Err(_) => false
-        }
-    }
     // Checks player distance to audio source for audio source volume
-    fn volume_check(&self, player: &Player) -> bool {
+    fn volume_check(&self, player: &Player, interference_amount: &i32) -> bool {
         // Gets distance to player
         let distance = self.between_distance(player.collider().x, player.collider().y);
         // Sets volume to zero If the player is out of the audio source range
@@ -75,7 +84,7 @@ impl AudioSource {
             self.channel.set_volume(0);
         // Sets volume to max If the player is close to the audio source
         } else if distance as u32 <= self.min_distance {
-            self.channel.set_volume(128);
+            self.channel.set_volume(128 - interference_amount);
         } else {
             // Normalises the distance between 0 and 128
             let normalised_distance = (
@@ -83,9 +92,9 @@ impl AudioSource {
                 (self.max_distance as f64 - self.min_distance as f64)
             ) * 128.0;
             // Inverses the normalised distance
-            let inversed_distance = (normalised_distance as i32 - 128).abs();
+            let inversed_distance = (normalised_distance as i32 - 128).abs() * 2;
 
-            self.channel.set_volume(inversed_distance * 2);
+            self.channel.set_volume(inversed_distance - interference_amount);
         }
 
         true
@@ -165,7 +174,6 @@ impl AudioSource {
         let mut delta_y: f64 = (self.collider.y - player_y).into();
         delta_y = delta_y * delta_y;
         
-        let distance = delta_x + delta_y;
-        return distance.sqrt();
+        return (delta_x + delta_y).sqrt();
     }
 }

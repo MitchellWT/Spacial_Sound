@@ -1,19 +1,16 @@
 extern crate sdl2;
 
-#[path = "./player/player.rs"]
+mod audio;
 mod player;
-#[path = "./player/direction.rs"]
-mod direction;
-#[path = "./audio/audio_source.rs"]
-mod audio_source;
-// Global varaibles
 mod globals;
-#[path = "./collision/collision.rs"]
 mod collision;
-#[path = "./collision/collision_map.rs"]
-mod collision_map;
 
-use collision_map::CollisionMap;
+use audio::wall::Wall;
+use audio::audio_source::AudioSource;
+use collision::collision_map::CollisionMap;
+use player::player::Player;
+use player::entity::Entity;
+use player::direction::Direction;
 use sdl2::mixer::{InitFlag, DEFAULT_CHANNELS, AUDIO_S16LSB};
 use sdl2::EventPump;
 use sdl2::video::Window;
@@ -22,10 +19,6 @@ use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
-
-use player::Player;
-use direction::Direction;
-use audio_source::AudioSource;
 
 fn main() {
     // Sets up SDL and get required variables for
@@ -44,19 +37,22 @@ fn main() {
     // Opens audio channels
     sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
     // Defines player and direction
-    let mut player          = Player::new(100, 100, 100, 100, 5);
-    let mut player_previous = player.collider();
-    let mut cool_music      = Vec::new();
-    cool_music.push(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100));
-    cool_music.push(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100));
+    //let mut player_previous = player.collider();
+    let mut entity_vec: Vec<Box<dyn Entity>> = Vec::new();
     let mut collision_map = CollisionMap::new();
-    collision_map.set_direction(cool_music[0].id(), Direction::NULL);
-    collision_map.set_direction(cool_music[1].id(), Direction::NULL);
+    let mut player = Player::new(0, 100, 100, 100, 100, 5);
+    let mut player_previous = player.collider();
+    entity_vec.push(Box::new(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
+    entity_vec.push(Box::new(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100)));
+    entity_vec.push(Box::new(Wall::new(2, 400, 400, 20, 300)));
+    collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
+    collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
+    collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
     let mut direction  = Direction::NULL;
     let mut last_frame_collision = false;
     // Play music
-    cool_music[0].play();
-    cool_music[1].play();
+    entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
+    entity_vec[1].as_any().downcast_ref::<AudioSource>().unwrap().play();
     // Game loop
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -107,8 +103,8 @@ fn main() {
             }
         }
 
-        update(&mut player, &mut player_previous, &cool_music, &mut collision_map, &direction, &mut last_frame_collision);
-        render(&player, &cool_music, &mut canvas);
+        update(&mut player, &mut entity_vec, &mut player_previous, &mut collision_map, &direction, &mut last_frame_collision);
+        render(&mut player, &mut entity_vec, &mut canvas);
     }
 }
 
@@ -142,10 +138,10 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
     (canvas, event_pump)
 }
 
-fn update(player: &mut Player, player_previous: &mut Rect, cool_music: &Vec<AudioSource>, collision_map: &mut CollisionMap, direction: &Direction, last_frame_collision: &mut bool) {
+fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_previous: &mut Rect, collision_map: &mut CollisionMap, direction: &Direction, last_frame_collision: &mut bool) {
     // Gets collision direction, If collision did not occur Direction::NULL is returned
-    collision_check(&player, cool_music, collision_map);
-    let screen_collision_tuple = screen_collision_check(&player);
+    collision_check(player, entity_vec, collision_map);
+    let screen_collision_tuple = screen_collision_check(player);
     
     // First, checks for screen bound collision
     if (screen_collision_tuple == (Direction::NULL, Direction::NULL) 
@@ -163,7 +159,7 @@ fn update(player: &mut Player, player_previous: &mut Rect, cool_music: &Vec<Audi
     *direction != Direction::NULL && *last_frame_collision {
         let new_collider = player_previous;
         // Overlap check that saves new collider value in new_collider
-        if overlap_check(new_collider, direction, cool_music, collision_map) {
+        if overlap_check(new_collider, direction, entity_vec, collision_map) {
             player.set_collider(*new_collider);
         }
         // Reset last frame collision
@@ -173,21 +169,25 @@ fn update(player: &mut Player, player_previous: &mut Rect, cool_music: &Vec<Audi
         *last_frame_collision = true;
     }
 
-    for music in cool_music {
-        music.update(player);
+    for entity in entity_vec {
+        match entity.as_any().downcast_ref::<AudioSource>() {
+            Some(audio_source) => audio_source.update(&player, &0),
+            None => false
+        };
     }
 }
 
-fn render(player: &Player, cool_music: &Vec<AudioSource>, canvas: &mut Canvas<Window>) {
+fn render(player: &mut Player, entity_vec: &Vec<Box<dyn Entity>>, canvas: &mut Canvas<Window>) {
     // Renders white background for window
     canvas.set_draw_color(Color::RGB(255, 255, 255));
     canvas.clear();
 
     player.render(canvas);
 
-    for music in cool_music {
-        music.render(canvas);
+    for entity in entity_vec {
+        entity.render(canvas);
     }
+
     // Shows rendered data to the screen
     canvas.present();
 }
@@ -197,32 +197,32 @@ fn screen_collision_check(player: &Player) -> (Direction, Direction) {
     return collision::screen_boarder(&player.collider());
 }
 
-fn collision_check(player: &Player, cool_music: &Vec<AudioSource>, collision_map: &mut CollisionMap) {
+fn collision_check(player: &Player, entity_vec: &Vec<Box<dyn Entity>>, collision_map: &mut CollisionMap) {
     // Checks all audio sources for collision
-    for music in cool_music {
-        let collided = collision::axis_aligned(&player.collider(), &music.collider());
+    for entity in entity_vec {
+        let collided = collision::axis_aligned(&player.collider(), &entity.collider());
         // Sets collision direction in collision_map If collision was sucessful
         if collided {
-            if music.collider().width() == music.collider().height() {
-                collision_map.set_direction(music.id(), collision::axis_aligned_direction(&player.collider(), &music.collider()));
+            if entity.collider().width() == entity.collider().height() {
+                collision_map.set_direction(entity.id(), collision::axis_aligned_direction(&player.collider(), &entity.collider()));
             } else {
-                collision_map.set_direction(music.id(), collision::line_to_line_direction(&player.collider(), &music.collider()));    
+                collision_map.set_direction(entity.id(), collision::line_to_line_direction(&player.collider(), &entity.collider()));    
             }
         }
         // Sets collision direction to Direction::NULL If collision did not occur
-        else if *collision_map.get_direction(music.id()).unwrap() != Direction::NULL {
-            collision_map.set_direction(music.id(), Direction::NULL);
+        else if *collision_map.get_direction(entity.id()).unwrap() != Direction::NULL {
+            collision_map.set_direction(entity.id(), Direction::NULL);
         }
     }
 }
 
-fn overlap_check(new_collider: &mut Rect, direction: &Direction, cool_music: &Vec<AudioSource>, collision_map: &CollisionMap) -> bool {
+fn overlap_check(new_collider: &mut Rect, direction: &Direction, entity_vec: &Vec<Box<dyn Entity>>, collision_map: &CollisionMap) -> bool {
     // Gets the first collider from music array using our movement direction
 
     // Shouldent create issues since our player is a square, If player
     // shape changes (I.e. circle) this may need to be changed
     let collision_id = collision_map.get_first_id(direction);
-    let collider     = &cool_music[*collision_id as usize].collider();
+    let collider     = &entity_vec[*collision_id as usize].collider();
 
     return collision::axis_aligned_continous(new_collider, direction, collider);
 }
