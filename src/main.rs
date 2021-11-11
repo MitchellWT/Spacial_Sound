@@ -47,20 +47,15 @@ fn main() {
     let mut player = Player::new(0, 100, 100, 100, 100, 5);
     let mut player_previous = player.collider();
     // Addeds all entities to vector
-    entity_vec.push(Box::new(AudioSource::new(0, 500, 500, 150, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
-    entity_vec.push(Box::new(AudioSource::new(1, 800, 120, 25, 25, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100)));
-    entity_vec.push(Box::new(Wall::new(2, 300, 500, 100, 50)));
+    entity_vec.push(Box::new(AudioSource::new(0, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
     // Addeds all entities to collision map
     collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
-    collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
-    collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
     // Players current movement direction
     let mut direction  = Direction::NULL;
     // Used for determining If contionus collision detection is required
     let mut last_frame_collision = false;
     // Play music
     entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
-    entity_vec[1].as_any().downcast_ref::<AudioSource>().unwrap().play();
     // Game loop
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -69,6 +64,23 @@ fn main() {
                 Event::Quit {..} |
                 Event::KeyDown {keycode: Some(Keycode::Escape), ..} => {
                     break 'running
+                },
+                // Displays demo scene one
+                Event::KeyDown {keycode: Some(Keycode::Kp1), ..} => {
+                    // Re-create entity vector, CollisionMap, and Player
+                    entity_vec = Vec::new();
+                    collision_map = CollisionMap::new();
+                    player = Player::new(0, 100, 100, 100, 100, 5);
+                    player_previous = player.collider();
+                    // Add all entities to vector
+                    entity_vec.push(Box::new(AudioSource::new(0, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
+                    // Add all entities to collision map
+                    collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
+                    // Set defaults
+                    direction = Direction::NULL;
+                    last_frame_collision = false;
+                    // Play music
+                    entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
                 },
                 // Up player movement
                 Event::KeyDown {keycode: Some(Keycode::W), ..} => {
