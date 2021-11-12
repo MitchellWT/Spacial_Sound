@@ -208,7 +208,7 @@ fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_pre
     *direction != Direction::NULL && *last_frame_collision {
         let new_collider = player_previous;
         // Overlap check that saves new collider value in new_collider
-        if overlap_check(new_collider, direction, entity_vec, collision_map) {
+        if overlap_check(new_collider, direction, &player.velocity(), entity_vec, collision_map) {
             player.set_collider(*new_collider);
         }
         // Reset last frame collision
@@ -284,11 +284,11 @@ fn collision_check(player: &Player, entity_vec: &Vec<Box<dyn Entity>>, collision
     }
 }
 
-fn overlap_check(new_collider: &mut Rect, direction: &Direction, entity_vec: &Vec<Box<dyn Entity>>, collision_map: &CollisionMap) -> bool {
+fn overlap_check(new_collider: &mut Rect, direction: &Direction, player_velocity: &i32, entity_vec: &Vec<Box<dyn Entity>>, collision_map: &CollisionMap) -> bool {
     // Shouldent create issues since our player is a square, If player
     // shape changes (I.e. circle) this may need to be changed
     let collision_id = collision_map.get_first_id(direction);
     let collider     = &entity_vec[*collision_id as usize].collider();
 
-    return collision::axis_aligned_continous(new_collider, direction, collider);
+    return collision::axis_aligned_continous(new_collider, direction, player_velocity, collider);
 }

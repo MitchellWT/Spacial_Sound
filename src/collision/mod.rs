@@ -155,7 +155,8 @@ pub fn screen_boarder(collider: &Rect) -> (Direction, Direction) {
 }
 // This calculation is inaccurate with two moving bodies
 // but will be correct with one moving body
-pub fn axis_aligned_continous(new_collider: &mut Rect, direction: &Direction, collider: &Rect) -> bool {
+pub fn axis_aligned_continous(new_collider: &mut Rect, direction: &Direction, player_velocity: &i32, collider: &Rect) -> bool {
+    let mut loop_counter = 0;
     // Check for inital collision, when player is against collider
     let mut collided = axis_aligned(&new_collider, collider);
     if collided {return false}
@@ -171,6 +172,10 @@ pub fn axis_aligned_continous(new_collider: &mut Rect, direction: &Direction, co
         }
 
         collided = axis_aligned(&new_collider, collider);
+        // Condition for when the player is at the exact corner of the
+        // rect collider, without this an infinite loop occurs
+        loop_counter += 1;
+        if loop_counter == *player_velocity {break}
     }
 
     true
