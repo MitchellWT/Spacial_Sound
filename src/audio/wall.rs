@@ -26,7 +26,7 @@ impl Entity for Wall {
     }
     // Draws the audio source to the screen as a rect
     fn render(&self, canvas: &mut Canvas<Window>) -> bool {
-        canvas.set_draw_color(Color::RGB(155, 0, 0));
+        canvas.set_draw_color(Color::RGB(0, 0, 155));
         match canvas.fill_rect(self.collider) {
             Ok(_)  => true,
             Err(_) => false
