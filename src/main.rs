@@ -108,7 +108,7 @@ fn main() {
                     player = Player::new(0, 100, 100, 100, 100, 5);
                     player_previous = player.collider();
                     // Add all entities to vector
-                    entity_vec.push(Box::new(AudioSource::new(0, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(0, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 0, 100, 500, 100)));
                     // Left wall
                     entity_vec.push(Box::new(Wall::new(1, (globals::SCREEN_WIDTH / 2 - 200) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 100, 70)));
                     // Top wall
@@ -163,9 +163,9 @@ fn main() {
                     player = Player::new(0, 100, 100, 100, 100, 5);
                     player_previous = player.collider();
                     // Add all entities to vector
-                    entity_vec.push(Box::new(AudioSource::new(0, 250, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
-                    entity_vec.push(Box::new(AudioSource::new(1, (globals::SCREEN_WIDTH - 250) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 1, 100, 500, 100)));
-                    entity_vec.push(Box::new(AudioSource::new(2, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 3) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 2, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(0, 250, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/mp3/Bass.mp3", 0, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(1, (globals::SCREEN_WIDTH - 250) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/mp3/Lead.mp3", 1, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(2, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 3) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/mp3/Kick.mp3", 2, 100, 500, 100)));
                     // Add all entities to collision map
                     collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
                     collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
@@ -236,7 +236,7 @@ fn sdl_setup() -> (Canvas<Window>, EventPump, Sdl2TtfContext, TextureCreator<Win
     // 4 channel mixing, simultaneously
     let channel_amount = 4;
     // Initalize SDL mixer
-    sdl2::mixer::init(InitFlag::FLAC).unwrap();
+    sdl2::mixer::init(InitFlag::FLAC | InitFlag::MP3).unwrap();
     // Allocated channels
     sdl2::mixer::allocate_channels(channel_amount);
     // Set up SDL window, centered to the screen
