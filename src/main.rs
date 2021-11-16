@@ -111,6 +111,49 @@ fn main() {
                     // Play music
                     entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
                 },
+                // Display demo scene three
+                Event::KeyDown {keycode: Some(Keycode::Num3), ..} => {
+                    // Re-create entity vector, CollisionMap, and Player
+                    entity_vec = Vec::new();
+                    collision_map = CollisionMap::new();
+                    player = Player::new(0, 100, 100, 100, 100, 5);
+                    player_previous = player.collider();
+                    // Add all entities to vector
+                    entity_vec.push(Box::new(AudioSource::new(0, 250, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(1, (globals::SCREEN_WIDTH - 250) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/gettin_freaky.flac", 1, 100, 500, 100)));
+                    // Add all entities to collision map
+                    collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
+                    collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
+                    // Set defaults
+                    direction = Direction::NULL;
+                    last_frame_collision = false;
+                    // Play music
+                    entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                    entity_vec[1].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                },                
+                // Display demo scene four
+                Event::KeyDown {keycode: Some(Keycode::Num4), ..} => {
+                    // Re-create entity vector, CollisionMap, and Player
+                    entity_vec = Vec::new();
+                    collision_map = CollisionMap::new();
+                    player = Player::new(0, 100, 100, 100, 100, 5);
+                    player_previous = player.collider();
+                    // Add all entities to vector
+                    entity_vec.push(Box::new(AudioSource::new(0, 250, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 0, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(1, (globals::SCREEN_WIDTH - 250) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 1, 100, 500, 100)));
+                    entity_vec.push(Box::new(AudioSource::new(2, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 3) as i32, 50, 50, "/home/mitchell/Spacial-Sound/src/audio/flac/waiting_so_long.flac", 2, 100, 500, 100)));
+                    // Add all entities to collision map
+                    collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
+                    collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
+                    collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
+                    // Set defaults
+                    direction = Direction::NULL;
+                    last_frame_collision = false;
+                    // Play music
+                    entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                    entity_vec[1].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                    entity_vec[2].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                },
                 // Up player movement
                 Event::KeyDown {keycode: Some(Keycode::W), ..} => {
                     direction = Direction::N;
