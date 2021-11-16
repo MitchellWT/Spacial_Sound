@@ -5,6 +5,10 @@ mod player;
 mod globals;
 mod collision;
 
+use sdl2::render::Texture;
+use sdl2::render::TextureCreator;
+use sdl2::video::WindowContext;
+use sdl2::ttf::Sdl2TtfContext;
 use audio::wall::Wall;
 use audio::audio_source::AudioSource;
 use collision::collision_map::CollisionMap;
@@ -23,9 +27,11 @@ use sdl2::rect::Rect;
 fn main() {
     // Sets up SDL and get required variables for
     // operations
-    let setup_tuple    = sdl_setup();
-    let mut canvas     = setup_tuple.0;
-    let mut event_pump = setup_tuple.1;
+    let setup_tuple         = sdl_setup();
+    let mut canvas          = setup_tuple.0;
+    let mut event_pump      = setup_tuple.1;
+    let ttf_context         = setup_tuple.2;
+    let texture_creator     = setup_tuple.3;
     // 44kHz
     let frequency = 44_100;
     // Signed 16 bit samples
@@ -36,6 +42,12 @@ fn main() {
     let chunck_size = 1_024;
     // Opens audio channels
     sdl2::mixer::open_audio(frequency, format, channels, chunck_size).unwrap();
+    // Load a font
+    let font = ttf_context.load_font("/home/mitchell/Spacial-Sound/src/font/Roboto-Regular.ttf", 128).unwrap();
+    // Create text texture
+    let mut text_surface = font.render("DEMO   SCENE   01").blended(Color::RGB(0, 0, 0)).unwrap();
+    let mut text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
+    let text_target = Rect::new(25, 0, 400, 150);
     // Vector for storing all entities in the game world
     // this excludes the player for code simplicity
     let mut entity_vec: Vec<Box<dyn Entity>> = Vec::new();
@@ -67,6 +79,9 @@ fn main() {
                 },
                 // Displays demo scene one (Default scene)
                 Event::KeyDown {keycode: Some(Keycode::Num1), ..} => {
+                    // Set text for rendered text
+                    text_surface = font.render("DEMO   SCENE   01").blended(Color::RGB(0, 0, 0)).unwrap();
+                    text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
                     // Re-create entity vector, CollisionMap, and Player
                     entity_vec = Vec::new();
                     collision_map = CollisionMap::new();
@@ -84,6 +99,9 @@ fn main() {
                 },
                 // Display demo scene two
                 Event::KeyDown {keycode: Some(Keycode::Num2), ..} => {
+                    // Set text for rendered text
+                    text_surface = font.render("DEMO   SCENE   02").blended(Color::RGB(0, 0, 0)).unwrap();
+                    text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
                     // Re-create entity vector, CollisionMap, and Player
                     entity_vec = Vec::new();
                     collision_map = CollisionMap::new();
@@ -113,6 +131,9 @@ fn main() {
                 },
                 // Display demo scene three
                 Event::KeyDown {keycode: Some(Keycode::Num3), ..} => {
+                    // Set text for rendered text
+                    text_surface = font.render("DEMO   SCENE   03").blended(Color::RGB(0, 0, 0)).unwrap();
+                    text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
                     // Re-create entity vector, CollisionMap, and Player
                     entity_vec = Vec::new();
                     collision_map = CollisionMap::new();
@@ -133,6 +154,9 @@ fn main() {
                 },                
                 // Display demo scene four
                 Event::KeyDown {keycode: Some(Keycode::Num4), ..} => {
+                    // Set text for rendered text
+                    text_surface = font.render("DEMO   SCENE   04").blended(Color::RGB(0, 0, 0)).unwrap();
+                    text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
                     // Re-create entity vector, CollisionMap, and Player
                     entity_vec = Vec::new();
                     collision_map = CollisionMap::new();
@@ -196,17 +220,19 @@ fn main() {
         }
 
         update(&mut player, &mut entity_vec, &mut player_previous, &mut collision_map, &direction, &mut last_frame_collision);
-        render(&mut player, &mut entity_vec, &mut canvas);
+        render(&mut player, &mut entity_vec, &mut canvas, &text_texture, &text_target);
     }
 }
 
-fn sdl_setup() -> (Canvas<Window>, EventPump) {
+fn sdl_setup() -> (Canvas<Window>, EventPump, Sdl2TtfContext, TextureCreator<WindowContext>) {
     // Initalize SDL
     let sdl_context = sdl2::init().unwrap();
     // Initalize SDL audio
     sdl_context.audio().unwrap();
     // Initalize SDL video
     let video_subsystem = sdl_context.video().unwrap();
+    // Initalize TTF module
+    let ttf_context = sdl2::ttf::init().unwrap();
     // 4 channel mixing, simultaneously
     let channel_amount = 4;
     // Initalize SDL mixer
@@ -226,8 +252,10 @@ fn sdl_setup() -> (Canvas<Window>, EventPump) {
     // Event pump used for detecting user input
     let event_pump = sdl_context.event_pump()
         .unwrap();
-
-    (canvas, event_pump)
+    // Create texture creator
+    let texture_creator = canvas.texture_creator();
+ 
+    (canvas, event_pump, ttf_context, texture_creator)
 }
 
 fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_previous: &mut Rect, collision_map: &mut CollisionMap, direction: &Direction, last_frame_collision: &mut bool) {
@@ -289,11 +317,14 @@ fn update(player: &mut Player, entity_vec: &mut Vec<Box<dyn Entity>>, player_pre
     }
 }
 
-fn render(player: &mut Player, entity_vec: &Vec<Box<dyn Entity>>, canvas: &mut Canvas<Window>) {
+fn render(player: &mut Player, entity_vec: &Vec<Box<dyn Entity>>, canvas: &mut Canvas<Window>, text_texture: &Texture, text_target: &Rect) {
     // Renders white background for window
     canvas.set_draw_color(Color::RGB(255, 255, 255));
     canvas.clear();
-    
+
+    // Renders text to screen
+    canvas.copy(text_texture, None, Some(*text_target)).unwrap();
+
     player.render(canvas);
     // Renders all entities in entity vector
     for entity in entity_vec {

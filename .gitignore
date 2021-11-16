@@ -24,3 +24,6 @@ Cargo.lock
 
 # Remove audio files
 src/audio/flac/
+
+# Remove font files
+src/font/
