@@ -28,3 +28,6 @@ src/audio/mp3/
 
 # Remove font files
 src/font/
+
+# Remove windows dlls
+windows_dll/
