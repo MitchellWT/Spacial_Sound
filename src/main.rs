@@ -32,19 +32,20 @@ fn main() {
         file_slash = "\\";
     }
     // Setting referenced files, audio files and font file
-    let waiting_so_long = [".", file_slash, "src", file_slash, "audio", file_slash, "flac", file_slash, "waiting_so_long.flac"].concat();
-    let gettin_freaky = [".", file_slash, "src", file_slash, "audio", file_slash, "flac", file_slash, "gettin_freaky.flac"].concat();
-    let bass = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Bass.mp3"].concat();
-    let kick = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Kick.mp3"].concat();
-    let lead = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Lead.mp3"].concat();
-    let font_path = [".", file_slash, "src", file_slash, "font", file_slash, "Roboto-Regular.ttf"].concat();
+    let waiting_so_long        = [".", file_slash, "src", file_slash, "audio", file_slash, "flac", file_slash, "waiting_so_long.flac"].concat();
+    let gettin_freaky          = [".", file_slash, "src", file_slash, "audio", file_slash, "flac", file_slash, "gettin_freaky.flac"].concat();
+    let bass                   = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Bass.mp3"].concat();
+    let kick                   = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Kick.mp3"].concat();
+    let lead                   = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "Lead.mp3"].concat();
+    let im_afraid_of_americans = [".", file_slash, "src", file_slash, "audio", file_slash, "mp3", file_slash, "im_afraid_of_americans.mp3"].concat();
+    let font_path              = [".", file_slash, "src", file_slash, "font", file_slash, "Roboto-Regular.ttf"].concat();
     // Sets up SDL and get required variables for
     // operations
-    let setup_tuple         = sdl_setup();
-    let mut canvas          = setup_tuple.0;
-    let mut event_pump      = setup_tuple.1;
-    let ttf_context         = setup_tuple.2;
-    let texture_creator     = setup_tuple.3;
+    let setup_tuple     = sdl_setup();
+    let mut canvas      = setup_tuple.0;
+    let mut event_pump  = setup_tuple.1;
+    let ttf_context     = setup_tuple.2;
+    let texture_creator = setup_tuple.3;
     // 44kHz
     let frequency = 44_100;
     // Signed 16 bit samples
@@ -60,7 +61,7 @@ fn main() {
     // Create text texture
     let mut text_surface = font.render("DEMO   SCENE   01").blended(Color::RGB(0, 0, 0)).unwrap();
     let mut text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
-    let text_target = Rect::new(25, 0, 400, 150);
+    let text_target = Rect::new(25, 0, 400, 200);
     // Vector for storing all entities in the game world
     // this excludes the player for code simplicity
     let mut entity_vec: Vec<Box<dyn Entity>> = Vec::new();
@@ -190,6 +191,32 @@ fn main() {
                     entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
                     entity_vec[1].as_any().downcast_ref::<AudioSource>().unwrap().play();
                     entity_vec[2].as_any().downcast_ref::<AudioSource>().unwrap().play();
+                },
+                // Display demo scene five
+                Event::KeyDown {keycode: Some(Keycode::Num5), ..} => {
+                    // Set text for rendered text
+                    text_surface = font.render("DEMO   SCENE   05").blended(Color::RGB(0, 0, 0)).unwrap();
+                    text_texture = texture_creator.create_texture_from_surface(&text_surface).unwrap();
+                    // Re-create entity vector, CollisionMap, and Player
+                    entity_vec = Vec::new();
+                    collision_map = CollisionMap::new();
+                    player = Player::new(0, 100, 100, 100, 100, 5);
+                    player_previous = player.collider();
+                    // Add audio source
+                    entity_vec.push(Box::new(AudioSource::new(0, (globals::SCREEN_WIDTH / 2) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 50, &im_afraid_of_americans, 0, 100, 500, 100)));
+                    // Left wall
+                    entity_vec.push(Box::new(Wall::new(1, (globals::SCREEN_WIDTH / 2 - 200) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 450)));
+                    // Right wall
+                    entity_vec.push(Box::new(Wall::new(2, (globals::SCREEN_WIDTH / 2 + 200) as i32, (globals::SCREEN_HEIGHT / 2) as i32, 50, 450)));
+                    // Add all entities to collision map
+                    collision_map.set_direction(entity_vec[0].id(), Direction::NULL);
+                    collision_map.set_direction(entity_vec[1].id(), Direction::NULL);
+                    collision_map.set_direction(entity_vec[2].id(), Direction::NULL);
+                    // Set defaults
+                    direction = Direction::NULL;
+                    last_frame_collision = false;
+                    // Play music
+                    entity_vec[0].as_any().downcast_ref::<AudioSource>().unwrap().play();
                 },
                 // Up player movement
                 Event::KeyDown {keycode: Some(Keycode::W), ..} => {
